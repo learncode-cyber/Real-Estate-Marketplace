@@ -1,0 +1,11 @@
+{
+  "name": "global-property-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Architecture scaffold for a global property marketplace; advertising platform is future-only and owner-approval gated.",
+  "scripts": {
+    "lint": "echo \"Configure workspace linting in Phase 1\"",
+    "typecheck": "echo \"Configure workspace typechecking in Phase 1\"",
+    "test": "echo \"Configure workspace tests in Phase 1\""
+  }
+}

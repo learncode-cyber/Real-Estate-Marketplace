@@ -1,0 +1,6 @@
+{
+  "name": "property-platform-backend",
+  "private": true,
+  "version": "0.1.0",
+  "description": "NestJS backend scaffold; implementation pending"
+}
