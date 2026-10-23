@@ -1,0 +1,142 @@
+// Authoritative data model source for the Global Property Platform (PLANNING.md sections 8, 19).
+//
+// Foundation scope only (Phase 1). Domain tables for identity, listings, projects, and
+// enquiries are introduced in their own phases with reviewed migrations.
+//
+// Conventions:
+// - UUID primary keys; human-readable slugs are never primary keys.
+// - Money is stored as integer minor units plus an ISO 4217 code (never floats).
+// - Timestamps are UTC (timestamptz).
+// - No advertising models. The Advertising Platform is locked until owner approval.
+
+generator client {
+  provider   = "prisma-client"
+  output     = "../generated/client"
+  moduleFormat = "cjs"
+  generatedFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MarketLifecycle {
+  CONFIGURED
+  READINESS_REVIEW
+  LAUNCHED
+  SUSPENDED
+
+  @@map("market_lifecycle")
+}
+
+/// A country-level market. Configuration defaults live in @property-platform/shared-types;
+/// this table records the lifecycle state that the readiness checklist advances.
+model Market {
+  id                 String          @id @default(uuid()) @db.Uuid
+  countryCode        String          @unique @db.Char(2)
+  name               String          @db.VarChar(120)
+  currencyCode       String          @db.Char(3)
+  currencyMinorUnits Int             @default(2) @db.SmallInt
+  timezone           String          @db.VarChar(64)
+  defaultLocale      String          @db.VarChar(8)
+  supportedLocales   String[]        @db.VarChar(8)
+  expansionOrder     Int             @db.SmallInt
+  lifecycle          MarketLifecycle @default(CONFIGURED)
+  createdAt          DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime        @updatedAt @db.Timestamptz(3)
+
+  @@index([lifecycle])
+  @@map("markets")
+}
+
+enum ListingType {
+  SALE
+  RENT
+
+  @@map("listing_type")
+}
+
+enum ListingStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+
+  @@map("listing_status")
+}
+
+enum PropertyKind {
+  APARTMENT
+  HOUSE
+  LAND
+  COMMERCIAL
+
+  @@map("property_kind")
+}
+
+/// A neighbourhood inside a city (for example Sonadanga in Khulna).
+model Area {
+  id          String     @id @default(uuid()) @db.Uuid
+  slug        String     @unique @db.VarChar(80)
+  nameEn      String     @db.VarChar(120)
+  nameBn      String     @db.VarChar(120)
+  city        String     @db.VarChar(120)
+  countryCode String     @db.Char(2)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(3)
+  properties  Property[]
+
+  @@index([countryCode, city])
+  @@map("areas")
+}
+
+model Developer {
+  id         String     @id @default(uuid()) @db.Uuid
+  slug       String     @unique @db.VarChar(80)
+  name       String     @db.VarChar(160)
+  verified   Boolean    @default(false)
+  createdAt  DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime   @updatedAt @db.Timestamptz(3)
+  properties Property[]
+
+  @@map("developers")
+}
+
+/// A property listing. Money is integer minor units plus ISO 4217 code.
+model Property {
+  id           String         @id @default(uuid()) @db.Uuid
+  slug         String         @unique @db.VarChar(120)
+  title        String         @db.VarChar(200)
+  description  String         @db.Text
+  listingType  ListingType
+  kind         PropertyKind
+  status       ListingStatus  @default(DRAFT)
+  priceMinor   BigInt         @db.BigInt
+  currencyCode String         @db.Char(3)
+  bedrooms     Int?           @db.SmallInt
+  bathrooms    Int?           @db.SmallInt
+  areaSqm      Int?           @db.Integer
+  isDemo       Boolean        @default(false)
+  areaId       String         @db.Uuid
+  developerId  String?        @db.Uuid
+  area         Area           @relation(fields: [areaId], references: [id])
+  developer    Developer?     @relation(fields: [developerId], references: [id])
+  media        PropertyMedia[]
+  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime       @updatedAt @db.Timestamptz(3)
+  publishedAt  DateTime?      @db.Timestamptz(3)
+
+  @@index([status, listingType, priceMinor])
+  @@index([areaId])
+  @@map("properties")
+}
+
+model PropertyMedia {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @db.Uuid
+  url        String   @db.VarChar(500)
+  altText    String   @db.VarChar(200)
+  sortOrder  Int      @db.SmallInt
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, sortOrder])
+  @@map("property_media")
+}

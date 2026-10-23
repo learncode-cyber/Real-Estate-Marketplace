@@ -1,0 +1,33 @@
+{
+  "name": "@property-platform/database",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prisma schema, versioned migrations, and reviewed SQL for PostgreSQL (Neon initially)",
+  "scripts": {
+    "generate": "prisma generate --config prisma.config.ts",
+    "validate": "prisma validate --config prisma.config.ts",
+    "format:schema": "prisma format --config prisma.config.ts",
+    "migrate:status": "prisma migrate status --config prisma.config.ts",
+    "migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
+    "migrate:dev": "prisma migrate dev --config prisma.config.ts",
+    "typecheck": "prisma validate --config prisma.config.ts && tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src tests --max-warnings=0",
+    "build": "npm run generate && tsc -p tsconfig.json",
+    "test": "node --test tests/schema.test.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "7.10.1"
+  },
+  "devDependencies": {
+    "prisma": "7.10.1",
+    "typescript": "5.9.3",
+    "dotenv": "17.2.3"
+  },
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "files": [
+    "dist",
+    "prisma",
+    "prisma.config.ts"
+  ]
+}

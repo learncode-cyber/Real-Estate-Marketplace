@@ -1,0 +1,38 @@
+{
+  "name": "global-property-platform",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Global property marketplace. Core marketplace only; the Advertising Platform is an owner-approval-gated future phase.",
+  "packageManager": "npm@10.9.7",
+  "engines": {
+    "node": ">=22.12.0 <23",
+    "npm": ">=10.9.0"
+  },
+  "workspaces": [
+    "packages/tsconfig",
+    "packages/shared-types",
+    "database",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "prepare:deps": "npm run build -w @property-platform/shared-types && npm run build -w @property-platform/database",
+    "lint": "npm run prepare:deps && npm run lint --workspaces --if-present && eslint . --max-warnings=0",
+    "typecheck": "npm run prepare:deps && npm run typecheck --workspaces --if-present",
+    "test": "npm run prepare:deps && npm run test --workspaces --if-present",
+    "build": "npm run prepare:deps && npm run build --workspaces --if-present",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:scope": "node scripts/check-scope.mjs",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "verify": "npm run check:scope && npm run check:secrets && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.13.0",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
+    "typescript-eslint": "8.72.0"
+  }
+}
